@@ -10,7 +10,7 @@ import { nanoid } from "nanoid";
 
 import fs from "fs/promises";
 
-import { HttpError, SendEmail } from "../Helpers/index.js";
+import { HttpError, SendEmail } from "../helpers/index.js";
 
 // import { sendEmail } from "../Helpers/sendEmail.js";
 
@@ -54,22 +54,19 @@ const signup = async (req, res) => {
 const signin = async (req, res) => {
   const { email, password } = req.body;
 
-  //смотрим есть ли пользователь с таким мейлом
   const user = await User.findOne({ email });
   if (!user) {
     throw HttpError(401, "Email or password is wrong(mail)");
   }
 
   if (!user.verify) {
-    throw HttpError(404, "User not found");
+    throw HttpError(404, "User not verify");
   }
-  //проверяем пароль, есть ли в базе
   const passwordCompare = await bcrypt.compare(password, user.password);
   if (!passwordCompare) {
     throw HttpError(401, "Email or password is wrong(pass)");
   }
 
-  // если все ок, делаем токен и отправляем
   const { _id: id } = user;
   const payload = {
     id,
@@ -111,19 +108,17 @@ const ChangeAvatar = async (req, res) => {
   }
 
   let { avatarURL, _id } = req.user;
-  //перемещаем файл
   const { path: oldPath, filename } = req.file;
 
   Jimp.read(oldPath, (err, image) => {
     if (err) throw err;
 
-    image.resize(250, 250); // изменяем ширину на 800 пикселей, а высоту автоматически
+    image.resize(250, 250); 
 
     const newPath = path.join(avatarPath, filename);
-    image.write(newPath); // сохраняем измененное изображение
+    image.write(newPath); 
   });
 
-  //создаем новый путь к перемещенному файлу
   const poster = path.join("avatars", filename);
   avatarURL = poster;
   const result = await User.findByIdAndUpdate(_id, { avatarURL });
@@ -146,7 +141,28 @@ const verify = async (req, res) => {
   });
 };
 
+const resendVerifyEmail = async (req, res) => {
+  const { email } = req.body;
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw HttpError(404, "Email not found");
+  }
+  if (user.verify) {
+    throw HttpError(404, "Email verify");
+  }
+  const verifyEmail = {
+    to: email,
+    subject: "verify email",
+    html: `<a target="_blank" href="${BASE_URL}/users/verify/${user.verificationCode}">Click to verify</a>`,
+  };
+  await sendEmail(verifyEmail);
+  res.json({
+    message: "Verification sended again",
+  });
+};
+
 export default {
+  resendVerifyEmail: ctrlWrapper(resendVerifyEmail),
   verify: ctrlWrapper(verify),
   signup: ctrlWrapper(signup),
   signin: ctrlWrapper(signin),

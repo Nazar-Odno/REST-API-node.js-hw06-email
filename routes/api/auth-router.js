@@ -1,4 +1,3 @@
-// группа маршрутов на авторизацию и регистрацию
 import express from "express";
 
 import authController from "../../controllers/auth-controller.js";
@@ -13,11 +12,14 @@ import { authenticate } from "../../middlewares/authenticate.js";
 
 import { validateBody } from "../../decorators/index.js";
 
-import { userSigninShema, userSignupShema } from "../../models/User.js";
+import {
+  userSigninShema,
+  userSignupShema,
+  userEmailShema,
+} from "../../models/User.js";
 
 const authRouter = express.Router();
 
-//регистрация нового пользователя
 authRouter.post(
   "/register",
   isEmptyBody,
@@ -25,7 +27,6 @@ authRouter.post(
   authController.signup
 );
 
-//логинизация
 authRouter.post(
   "/login",
   isEmptyBody,
@@ -33,17 +34,20 @@ authRouter.post(
   authController.signin
 );
 
-//получение токена по запросу
+authRouter.post(
+  "/verify",
+  isEmptyBody,
+  validateBody(userEmailShema),
+  authController.resendVerifyEmail
+);
+
 authRouter.get("/current", authenticate, authController.GetCurrent);
 
-//верификация
 authRouter.get("/verify/:verificationCode", authController.verify);
 
-//логаут
 authRouter.post("/signout", authenticate, authController.signout);
 export default authRouter;
 
-//Изменение аватарки
 authRouter.patch(
   "/avatars",
   upload.single("avatarURL"),

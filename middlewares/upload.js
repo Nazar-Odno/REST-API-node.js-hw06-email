@@ -3,7 +3,7 @@
 import multer from "multer";
 import path from "path";
 
-import { HttpError } from "../Helpers/index.js";
+import { HttpError } from "../helpers/index.js";
 
 const destination = path.resolve("tmp");
 
