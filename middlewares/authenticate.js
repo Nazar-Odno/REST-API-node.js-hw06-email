@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 
 import { JWT_SECRET } from "../config.js";
 
-import { HttpError } from "../helpers/index.js";
+import { HttpError } from "../Helpers/index.js";
 
 import User from "../models/User.js";
 

@@ -1,6 +1,6 @@
 // import fs from "fs/promises";
 // import path from "path";
-import { HttpError } from "../helpers/index.js";
+import { HttpError } from "../Helpers/index.js";
 import { ctrlWrapper } from "../decorators/index.js";
 
 import Contact from "../models/Contact.js";
@@ -13,6 +13,7 @@ import {
 // const avatarPath = path.resolve("public", "avatars");
 
 const getAll = async (req, res) => {
+  //запрос за контактами только этого пользователя
   const { _id: owner } = req.user;
   const { page = 1, limit = 10 } = req.params;
   const result = await Contact.find({ owner });

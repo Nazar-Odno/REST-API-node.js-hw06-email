@@ -10,7 +10,7 @@ import { nanoid } from "nanoid";
 
 import fs from "fs/promises";
 
-import { HttpError, SendEmail } from "../helpers/index.js";
+import { HttpError, SendEmail } from "../Helpers/index.js";
 
 // import { sendEmail } from "../Helpers/sendEmail.js";
 
@@ -54,6 +54,7 @@ const signup = async (req, res) => {
 const signin = async (req, res) => {
   const { email, password } = req.body;
 
+  //смотрим есть ли пользователь с таким мейлом
   const user = await User.findOne({ email });
   if (!user) {
     throw HttpError(401, "Email or password is wrong(mail)");
@@ -62,11 +63,13 @@ const signin = async (req, res) => {
   if (!user.verify) {
     throw HttpError(404, "User not verify");
   }
+  //проверяем пароль, есть ли в базе
   const passwordCompare = await bcrypt.compare(password, user.password);
   if (!passwordCompare) {
     throw HttpError(401, "Email or password is wrong(pass)");
   }
 
+  // если все ок, делаем токен и отправляем
   const { _id: id } = user;
   const payload = {
     id,
@@ -108,17 +111,19 @@ const ChangeAvatar = async (req, res) => {
   }
 
   let { avatarURL, _id } = req.user;
+  //перемещаем файл
   const { path: oldPath, filename } = req.file;
 
   Jimp.read(oldPath, (err, image) => {
     if (err) throw err;
 
-    image.resize(250, 250); 
+    image.resize(250, 250); // изменяем ширину на 800 пикселей, а высоту автоматически
 
     const newPath = path.join(avatarPath, filename);
-    image.write(newPath); 
+    image.write(newPath); // сохраняем измененное изображение
   });
 
+  //создаем новый путь к перемещенному файлу
   const poster = path.join("avatars", filename);
   avatarURL = poster;
   const result = await User.findByIdAndUpdate(_id, { avatarURL });

@@ -1,3 +1,4 @@
+// группа маршрутов на авторизацию и регистрацию
 import express from "express";
 
 import authController from "../../controllers/auth-controller.js";
@@ -20,6 +21,7 @@ import {
 
 const authRouter = express.Router();
 
+//регистрация нового пользователя
 authRouter.post(
   "/register",
   isEmptyBody,
@@ -27,6 +29,7 @@ authRouter.post(
   authController.signup
 );
 
+//логинизация
 authRouter.post(
   "/login",
   isEmptyBody,
@@ -34,6 +37,7 @@ authRouter.post(
   authController.signin
 );
 
+//еще раз выслать верификацию
 authRouter.post(
   "/verify",
   isEmptyBody,
@@ -41,13 +45,17 @@ authRouter.post(
   authController.resendVerifyEmail
 );
 
+//получение токена по запросу
 authRouter.get("/current", authenticate, authController.GetCurrent);
 
+//верификация
 authRouter.get("/verify/:verificationCode", authController.verify);
 
+//логаут
 authRouter.post("/signout", authenticate, authController.signout);
 export default authRouter;
 
+//Изменение аватарки
 authRouter.patch(
   "/avatars",
   upload.single("avatarURL"),
